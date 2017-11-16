@@ -1,0 +1,4 @@
+account = dict(
+    key = '',
+    secret = '',
+)
