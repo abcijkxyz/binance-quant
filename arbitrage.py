@@ -43,15 +43,15 @@ def process_any_depth(depth_cache):
 
     
     #BNB->ETH->BTC->BNB
-    BEBRatio = float(BNBETH_bestbid[0]) * float(ETHBTC_bestbid[0]) /float(BNBBTC_bestask[0]) - 1.0015
+    BEBRatio = float(BNBETH_bestbid[0]) * float(ETHBTC_bestbid[0]) /float(BNBBTC_bestask[0]) - 1 - config.threshold['commission']
     BEBCapacity = int(min(float(BNBETH_bestbid[1]), float(ETHBTC_bestbid[1]) / float(BNBETH_bestbid[0]),float(BNBBTC_bestask[1])))
 
     #BNB->BTC->ETH->BNB
-    BBERatio = float(BNBBTC_bestbid[0])  /float(ETHBTC_bestask[0]) /float(BNBETH_bestask[0]) - 1.0015
+    BBERatio = float(BNBBTC_bestbid[0])  /float(ETHBTC_bestask[0]) /float(BNBETH_bestask[0]) - 1 - config.threshold['commission']
     BBECapacity = int(min(float(BNBETH_bestask[1]), float(ETHBTC_bestask[1]) / float(BNBETH_bestask[0]),float(BNBBTC_bestbid[1])))
 
     #BNB->ETH->BTC->BNB
-    if(BEBCapacity * BEBRatio>0.1):
+    if(BEBCapacity * BEBRatio>config.threshold['targetearn']):
         isTrading=True
         print("{}\tBNB->ETH->BTC->BNB Ratio:{},\tQuantity:{}".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) , BEBRatio,BEBCapacity))
         
@@ -124,7 +124,7 @@ def process_any_depth(depth_cache):
 
     
     #BNB->BTC->ETH->BNB
-    if(BBECapacity * BBERatio>0.1):
+    if(BBECapacity * BBERatio>config.threshold['targetearn']):
         isTrading=True
         print("{}\tBNB->BTC->ETH->BNB Ratio:{},\tQuantity:{}".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) , BBERatio,BBECapacity))
         
