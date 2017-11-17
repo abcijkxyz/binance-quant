@@ -33,7 +33,7 @@ def process_any_depth(depth_cache):
 
         #BNB->BTC->ETH->BNB
         BBERatio = float(BNBBTC_bestbid[0])  /float(ETHBTC_bestask[0]) /float(BNBETH_bestask[0]) - 1.0015
-        BBECapacity = int(min(float(BNBETH_bestask[1]), flota(ETHBTC_bestask[1]) / flota(BNBETH_bestask[0]),float(BNBBTC_bestbid[1])))
+        BBECapacity = int(min(float(BNBETH_bestask[1]), float(ETHBTC_bestask[1]) / float(BNBETH_bestask[0]),float(BNBBTC_bestbid[1])))
 
         #BNB->ETH->BTC->BNB
         if(BEBCapacity * BEBRatio>0.1):
