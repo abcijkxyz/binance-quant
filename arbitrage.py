@@ -19,17 +19,17 @@ def process_any_depth(depth_cache):
         global DCs
         global client
 
-        BNBETH_bestbid = float(DCs['BNBETH'].get_bids()[0])
-        BNBETH_bestask = float(DCs['BNBETH'].get_asks()[0])
-        BNBBTC_bestbid = float(DCs['BNBBTC'].get_bids()[0])
-        BNBBTC_bestask = float(DCs['BNBBTC'].get_asks()[0])
-        ETHBTC_bestbid = float(DCs['ETHBTC'].get_bids()[0])
-        ETHBTC_bestask = float(DCs['ETHBTC'].get_asks()[0])
+        BNBETH_bestbid = DCs['BNBETH'].get_bids()[0]
+        BNBETH_bestask = DCs['BNBETH'].get_asks()[0]
+        BNBBTC_bestbid = DCs['BNBBTC'].get_bids()[0]
+        BNBBTC_bestask = DCs['BNBBTC'].get_asks()[0]
+        ETHBTC_bestbid = DCs['ETHBTC'].get_bids()[0]
+        ETHBTC_bestask = DCs['ETHBTC'].get_asks()[0]
 
         
         #BNB->ETH->BTC->BNB
-        BEBRatio = BNBETH_bestbid[0] * ETHBTC_bestbid[0] /BNBBTC_bestask[0] - 1.0015
-        BEBCapacity = int(min(BNBETH_bestbid[1], int(ETHBTC_bestbid[1]/BNBETH_bestbid[0]),BNBBTC_bestask[1]))
+        BEBRatio = float(BNBETH_bestbid[0]) * float(ETHBTC_bestbid[0]) /float(BNBBTC_bestask[0]) - 1.0015
+        BEBCapacity = int(min(float(BNBETH_bestbid[1]), int(float(ETHBTC_bestbid[1])/float(BNBETH_bestbid[0])),float(BNBBTC_bestask[1])))
 
         if(BEBCapacity * BEBRatio>0.1):
             #attemp to arbitrade
@@ -86,7 +86,7 @@ def process_any_depth(depth_cache):
                 disable_validation=True,
                 newOrderRespType='FULL'
                 )
-			print(json.dumps(btc2bnborder, indent=4, sort_keys=True))
+	    print(json.dumps(btc2bnborder, indent=4, sort_keys=True))
             BNBAmount = float(0)
             for fill in btc2bnborder['fills']:
                 BNBAmount+=float(fill['qty'])
