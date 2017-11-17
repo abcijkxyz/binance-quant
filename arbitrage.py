@@ -19,12 +19,12 @@ def process_any_depth(depth_cache):
         global DCs
         global client
 
-        BNBETH_bestbid = DCs['BNBETH'].get_bids()[0]
-        BNBETH_bestask = DCs['BNBETH'].get_asks()[0]
-        BNBBTC_bestbid = DCs['BNBBTC'].get_bids()[0]
-        BNBBTC_bestask = DCs['BNBBTC'].get_asks()[0]
-        ETHBTC_bestbid = DCs['ETHBTC'].get_bids()[0]
-        ETHBTC_bestask = DCs['ETHBTC'].get_asks()[0]
+        BNBETH_bestbid = float(DCs['BNBETH'].get_bids()[0])
+        BNBETH_bestask = float(DCs['BNBETH'].get_asks()[0])
+        BNBBTC_bestbid = float(DCs['BNBBTC'].get_bids()[0])
+        BNBBTC_bestask = float(DCs['BNBBTC'].get_asks()[0])
+        ETHBTC_bestbid = float(DCs['ETHBTC'].get_bids()[0])
+        ETHBTC_bestask = float(DCs['ETHBTC'].get_asks()[0])
 
         
         #BNB->ETH->BTC->BNB
@@ -42,10 +42,11 @@ def process_any_depth(depth_cache):
                 disable_validation=True,
                 newOrderRespType='FULL'
                 )
-            ETHAmount = 0
+            print(json.dumps(bnb2ethorder, indent=4, sort_keys=True))
+            ETHAmount = float(0)
             for fill in bnb2ethorder['fills']:
-                ETHAmount+=fill['qty'] * float(fill['price'])
-                if(fill['commissionAsset'] == "ETH"):
+                ETHAmount += (float(fill['qty']) * float(fill['price']))
+                if fill['commissionAsset'] == "ETH":
                     ETHAmount -= float(fill['commission'])
             print("Sell {} BNB into {} ETH".format(BEBCapacity, ETHAmount))
 
@@ -56,27 +57,42 @@ def process_any_depth(depth_cache):
                 disable_validation=True,
                 newOrderRespType='FULL'
                 )
-            BTCAmount = 0
+            print(json.dumps(eth2btcorder, indent=4, sort_keys=True))
+            BTCAmount = float(0)
             for fill in eth2btcorder['fills']:
-                BTCAmount+=fill['qty'] * float(fill['price'])
-                if(fill['commissionAsset'] == "BTC"):
+                BTCAmount+=(float(fill['qty']) * float(fill['price']))
+                if fill['commissionAsset'] == "BTC":
                     BTCAmount -= float(fill['commission'])
             print("Sell {} ETH into {} BTC".format(ETHAmount, BTCAmount))
 
             #buy BTC to BNB
+            Buy_BNBAmount = 0
+            Sell_BTCAmount = BTCAmount
+            asks = DCs['BNBBTC'].get_asks()
+            for ask in asks:
+                cost = float(ask[0]) * float(ask[1])
+                if Sell_BTCAmount < cost:
+                    Buy_BNBAmount += (Sell_BTCAmount/float(ask[0]))
+                    Sell_BTCAmount = 0
+                    break
+                else:
+                    Sell_BTCAmount -=cost
+                    Buy_BNBAmount += ask[1]
+                    
 
             btc2bnborder = client.order_market_buy(
                 symbol='BNBBTC',
-                quantity=int(BTCAmount/DCs['BNBBTC'].get_asks()[0]),
+                quantity=int(Buy_BNBAmount),
                 disable_validation=True,
                 newOrderRespType='FULL'
                 )
-            BNBAmount = 0
+			print(json.dumps(btc2bnborder, indent=4, sort_keys=True))
+            BNBAmount = float(0)
             for fill in btc2bnborder['fills']:
-                BNBAmount+=fill['qty'] * float(fill['price'])
-                if(fill['commissionAsset'] == "BNB"):
+                BNBAmount+=float(fill['qty'])
+                if fill['commissionAsset'] == "BNB" :
                     BNBAmount -= float(fill['commission'])
-            print("Buy {} BTC into {} BNB".format(ETHAmount, BNBAmount))
+            print("Buy {} BTC into {} BNB".format(BTCAmount, BNBAmount))
 
         else:
             print("{}\tBNB->ETH->BTC->BNB Ratio:{},\tNot Good Enough".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) , BEBRatio))
