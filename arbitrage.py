@@ -203,7 +203,7 @@ def process_any_depth(depth_cache):
             if fill['commissionAsset'] == "BNB" :
                 BNBAmount -= float(fill['commission'])
         print("Buy {} ETH into {} BNB".format(ETHAmount, BNBAmount))
-        time.sleep(1)
+        time.sleep(10)
         isTrading=False
     #else:
     #    print("{}\tBNB->BTC->ETH->BNB Ratio:{},\tNot Good Enough".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) , BBERatio))
