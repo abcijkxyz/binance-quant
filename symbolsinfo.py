@@ -7,7 +7,7 @@ import json
 symbolsInfo = {}
 def refresh_symbolsinfo():
     global symbolsInfo
-    url = 'https://api.binance.com/api/v1/symbolsInfo'
+    url = 'https://api.binance.com/api/v1/exchangeInfo'
     jsondata = requests.get(url).json()
     for eachsymbol in jsondata['symbols']:
         if not eachsymbol['symbol'] in symbolsInfo:
