@@ -36,12 +36,12 @@ def process_usersocket_message(msg):
 
         if(OLDSIDE == "BUY"):
             NEWSIDE = "SELL"
-            NEWPRICE = int(OLDPRICE*1.05263158/symbolsInfo[SYMBOL]['tickSize']) * symbolsInfo[SYMBOL]['tickSize']
+            NEWPRICE = int(OLDPRICE/(1-config.threshold['margin'])/symbolsInfo[SYMBOL]['tickSize']) * symbolsInfo[SYMBOL]['tickSize']
             NEWQUANTITY = OLDQUANTITY
         else:
             NEWSIDE = "BUY"
-            NEWPRICE = int(OLDPRICE*0.95/symbolsInfo[SYMBOL]['tickSize']) * symbolsInfo[SYMBOL]['tickSize']
-            NEWQUANTITY = int(OLDQUANTITY*1.051/symbolsInfo[SYMBOL]['stepSize']) * symbolsInfo[SYMBOL]['stepSize']
+            NEWPRICE = int(OLDPRICE*(1-config.threshold['margin'])/symbolsInfo[SYMBOL]['tickSize']) * symbolsInfo[SYMBOL]['tickSize']
+            NEWQUANTITY = OLDQUANTITY
 
         order = client.order_limit(
             symbol=SYMBOL,
