@@ -1,0 +1,76 @@
+Ninj0r, [16.11.17 13:49]
+Price here means the order price
+
+Ninj0r, [16.11.17 13:49]
+If you want the executed price, query /myTrades. You can correlate trades and orders via "orderId"
+
+Ninj0r, [16.11.17 13:50]
+also for a market order, try adding this:
+
+Ninj0r, [16.11.17 13:50]
+&newOrderRespType=FULL
+
+Sir Ian, [16.11.17 13:50]
+Thanks I will try.
+
+Ninj0r, [16.11.17 13:50]
+Since market orders execute immediately, you will get all the fills in the response.
+
+Sir Ian, [16.11.17 13:55]
+&newOrderRespType=FULL is for /myTrades or for  /order?  What difference can I expect?
+
+Ninj0r, [16.11.17 14:17]
+[In reply to Sir Ian]
+POST /order. It will add an element called "fills"
+
+Ninj0r, [16.11.17 14:17]
+When the next version is released this will be documented fully.
+
+
+
+
+{
+    "clientOrderId": "RBnWNubc2aYJWRHBD5XA88",
+    "executedQty": "1.00000000",
+    "fills": [
+        {
+            "commission": "0.00000000",
+            "commissionAsset": "BCPT",
+            "price": "0.20000000",
+            "qty": "1.00000000",
+            "tradeId": 1092
+        }
+    ],
+    "orderId": 45595,
+    "origQty": "1.00000000",
+    "price": "0.00000000",
+    "side": "BUY",
+    "status": "FILLED",
+    "symbol": "BCPTBNB",
+    "timeInForce": "GTC",
+    "transactTime": 1510851791429,
+    "type": "MARKET"
+}
+
+{
+    "clientOrderId": "RqmJOSrtl9jov7mHg3hZPf",
+    "executedQty": "1.00000000",
+    "fills": [
+        {
+            "commission": "0.00000000",
+            "commissionAsset": "BNB",
+            "price": "0.18984000",
+            "qty": "1.00000000",
+            "tradeId": 1093
+        }
+    ],
+    "orderId": 45645,
+    "origQty": "1.00000000",
+    "price": "0.00000000",
+    "side": "SELL",
+    "status": "FILLED",
+    "symbol": "BCPTBNB",
+    "timeInForce": "GTC",
+    "transactTime": 1510852009970,
+    "type": "MARKET"
+}
