@@ -41,7 +41,7 @@ def process_usersocket_message(msg):
         else:
             NEWSIDE = "BUY"
             NEWPRICE = int(OLDPRICE*0.95/symbolsInfo[SYMBOL]['tickSize']) * symbolsInfo[SYMBOL]['tickSize']
-            NEWQUANTITY = int(OLDQUANTITY*1.05263158/symbolsInfo[SYMBOL]['stepSize']) * symbolsInfo[SYMBOL]['stepSize']
+            NEWQUANTITY = int(OLDQUANTITY*1.051/symbolsInfo[SYMBOL]['stepSize']) * symbolsInfo[SYMBOL]['stepSize']
 
         order = client.order_limit(
             symbol=SYMBOL,
