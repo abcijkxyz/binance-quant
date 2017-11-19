@@ -47,12 +47,12 @@ def process_usersocket_message(msg):
             symbol=SYMBOL,
             quantity=NEWQUANTITY,
             side=NEWSIDE,
-            price=NEWPRICE,
-            newOrderRespType='FULL'
+            price=NEWPRICE
+            #newOrderRespType='FULL'
             )
         print(json.dumps(order, indent=4, sort_keys=True))
     
 from binance.websockets import BinanceSocketManager
 bm1 = BinanceSocketManager(client)
-bm1.start_user_socket()
+bm1.start_user_socket(process_usersocket_message)
 bm1.start()
