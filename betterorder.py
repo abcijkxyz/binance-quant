@@ -22,20 +22,17 @@ refresh_symbolsinfo()
 def process_usersocket_message(msg):
     # if a limite order is filled
     #print(json.dumps(msg, indent=4, sort_keys=True))
-    time.sleep(1)
-    if msg['e'] == "executionReport" and msg['X'] == "NEW" and msg['o'] == "LIMIT":
-        SYMBOL = msg['s']
-        OLDSIDE = msg['S']
-        OLDPRICE = float(msg['p'])
-        OLDQUANTITY = float(msg['q'])
-        print("{} An order placed:{} {} {}@{}".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),OLDSIDE,SYMBOL,OLDQUANTITY,OLDPRICE))
 
-    if msg['e'] == "executionReport" and msg['X'] == "FILLED" and msg['o'] == "LIMIT":
+    if msg['e'] == "executionReport" and msg['o'] == "LIMIT":
         SYMBOL = msg['s']
         OLDSIDE = msg['S']
         OLDPRICE = float(msg['p'])
         OLDQUANTITY = float(msg['q'])
-        print("{} An order filled:{} {} {}@{}".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),OLDSIDE,SYMBOL,OLDQUANTITY,OLDPRICE))
+        print("{} An order {}:{} {} {}@{}".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),msg['X'],OLDSIDE,SYMBOL,OLDQUANTITY,OLDPRICE))
+        if not msg['X'] == "FILLED":
+            return
+        else:
+            time.sleep(1)
 
         if not SYMBOL in symbolsInfo:
             print("{} is not included, refresh".format(SYMBOL))
@@ -43,36 +40,22 @@ def process_usersocket_message(msg):
 
         if(OLDSIDE == "BUY"):
             NEWSIDE = "SELL"
-            NEWPRICE = int(OLDPRICE/(1-config.better['margin'])/symbolsInfo[SYMBOL]['tickSize']) * symbolsInfo[SYMBOL]['tickSize']
+            NEWPRICE = int(OLDPRICE/(1-config.better['upmargin'])/symbolsInfo[SYMBOL]['tickSize']) * symbolsInfo[SYMBOL]['tickSize']
             NEWQUANTITY = OLDQUANTITY
         else:
             NEWSIDE = "BUY"
-            NEWPRICE = int(OLDPRICE*(1-config.better['margin'])/symbolsInfo[SYMBOL]['tickSize']) * symbolsInfo[SYMBOL]['tickSize']
+            NEWPRICE = int(OLDPRICE*(1-config.better['downmargin'])/symbolsInfo[SYMBOL]['tickSize']) * symbolsInfo[SYMBOL]['tickSize']
             NEWQUANTITY = OLDQUANTITY
 
         order = client.order_limit(
             symbol=SYMBOL,
             quantity=NEWQUANTITY,
             side=NEWSIDE,
-            price=NEWPRICE
+            price=format(NEWPRICE,".8f")
             #newOrderRespType='FULL'
             )
         #print("An order placed:{} {} {}@{}".format(NEWSIDE,SYMBOL,NEWQUANTITY,NEWPRICE))
         #print(json.dumps(order, indent=4, sort_keys=True))
-    if msg['e'] == "executionReport" and msg['X'] == "EXPIRED" and msg['o'] == "LIMIT":
-        SYMBOL = msg['s']
-        OLDSIDE = msg['S']
-        OLDPRICE = float(msg['p'])
-        OLDQUANTITY = float(msg['q'])
-        print("{} An order expired:{} {} {}@{}".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),OLDSIDE,SYMBOL,OLDQUANTITY,OLDPRICE))
-        order = client.order_limit(
-            symbol=SYMBOL,
-            quantity=OLDQUANTITY,
-            side=OLDSIDE,
-            price=OLDPRICE
-            #newOrderRespType='FULL'
-            )
-    
 from binance.websockets import BinanceSocketManager
 bm1 = BinanceSocketManager(client)
 bm1.start_user_socket(process_usersocket_message)
