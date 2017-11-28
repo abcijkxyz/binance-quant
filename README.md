@@ -1,2 +1,10 @@
 # binance-quant
-duduzhu's quant trading strategy on binance
+duduzhu's quant trading strategies on binance
+
+* This is an open-source project in product maintained by duduzhu
+* Use in your own risk
+* Welcome for interesting advices
+
+## Donate:
+* BTC : 12dWfqaACWpu28E7tQxcwjhthqWCRcxXMn
+* ETH : 0x6946cf867d5fd9d8b32e4c21ac5f3a97dec8cc6f
