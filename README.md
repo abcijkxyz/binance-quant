@@ -10,3 +10,6 @@ duduzhu's quant trading strategies on binance
 * LTC : `Ld6gWimJKt1ft5r4kNCdvDbtMMvgaFFEX5`
 * ETH : `0x80ef6f405ada8e6ca4ceb01e2e7e365a1c6c30e3`
 * DOGE: `DBwqTUPrS9bfqY1Y9ksiTgz6oD6hzDQJXf`
+
+## Ref Link for Binance register
+https://www.binance.com/?ref=10150829 or just fill `10150829` in referal when registering
