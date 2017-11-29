@@ -1,8 +1,11 @@
 account = dict(
-key = '',
-secret = '',
-)
+    key = '',
+    secret = '',
+    )
 threshold = dict(
-commission = 0.0015,
-targetearn = 0.5,
+    commission = 0.003,
+    targetearn = 2,
+    )
+better = dict(
+    margin = 0.002
 )

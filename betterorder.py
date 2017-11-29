@@ -40,21 +40,25 @@ def process_usersocket_message(msg):
 
         if(OLDSIDE == "BUY"):
             NEWSIDE = "SELL"
-            NEWPRICE = int(OLDPRICE/(1-config.better['upmargin'])/symbolsInfo[SYMBOL]['tickSize']) * symbolsInfo[SYMBOL]['tickSize']
+            NEWPRICE = int(OLDPRICE/(1-config.better['margin'])/symbolsInfo[SYMBOL]['tickSize']) * symbolsInfo[SYMBOL]['tickSize']
             NEWQUANTITY = OLDQUANTITY
         else:
             NEWSIDE = "BUY"
-            NEWPRICE = int(OLDPRICE*(1-config.better['downmargin'])/symbolsInfo[SYMBOL]['tickSize']) * symbolsInfo[SYMBOL]['tickSize']
+            NEWPRICE = int(OLDPRICE*(1-config.better['margin'])/symbolsInfo[SYMBOL]['tickSize']) * symbolsInfo[SYMBOL]['tickSize']
             NEWQUANTITY = OLDQUANTITY
 
-        order = client.order_limit(
-            symbol=SYMBOL,
-            quantity=NEWQUANTITY,
-            side=NEWSIDE,
-            price=format(NEWPRICE,".8f")
-            #newOrderRespType='FULL'
-            )
-        #print("An order placed:{} {} {}@{}".format(NEWSIDE,SYMBOL,NEWQUANTITY,NEWPRICE))
+        print("Placing an order: {} {} {}@{}".format(NEWSIDE, SYMBOL, NEWQUANTITY,NEWPRICE))
+        try:
+            order = client.order_limit(
+                symbol=SYMBOL,
+                quantity=NEWQUANTITY,
+                side=NEWSIDE,
+                price=format(NEWPRICE,".8f")
+                #newOrderRespType='FULL'
+                )
+            print("Placed")
+        except ValueError:
+            print("Something goes wrong")
         #print(json.dumps(order, indent=4, sort_keys=True))
 from binance.websockets import BinanceSocketManager
 bm1 = BinanceSocketManager(client)
