@@ -6,5 +6,7 @@ duduzhu's quant trading strategies on binance
 * Welcome for interesting advices
 
 ## Donate:
-* BTC : 12dWfqaACWpu28E7tQxcwjhthqWCRcxXMn
-* ETH : 0x6946cf867d5fd9d8b32e4c21ac5f3a97dec8cc6f
+* BTC : `1M9LUWqi1Y1fVMRRVyi9Z7oPreDa4ffKxA`
+* LTC : `Ld6gWimJKt1ft5r4kNCdvDbtMMvgaFFEX5`
+* ETH : `0x80ef6f405ada8e6ca4ceb01e2e7e365a1c6c30e3`
+* DOGE: `DBwqTUPrS9bfqY1Y9ksiTgz6oD6hzDQJXf`
