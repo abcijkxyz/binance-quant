@@ -7,7 +7,6 @@ import threading
 import time
 
 from binance.client import Client
-from binance.depthcache import DepthCacheManager
 from binance.enums import *
 
 import config 
@@ -15,7 +14,6 @@ from symbolsinfo import *
 
 # Client Initialization
 client = Client(config.account['key'], config.account['secret'])
-
 refresh_symbolsinfo()
 
 #handler of account update event
