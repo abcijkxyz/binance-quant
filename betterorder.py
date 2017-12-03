@@ -21,7 +21,7 @@ def process_usersocket_message(msg):
     # if a limite order is filled
     #print(json.dumps(msg, indent=4, sort_keys=True))
 
-    if msg['e'] == "executionReport" and msg['o'] == "LIMIT":
+    if msg['e'] == "executionReport" and msg['o'] == "LIMIT" and (msg['X'] == "NEW" or msg['X'] == "FILLED"):
         SYMBOL = msg['s']
         OLDSIDE = msg['S']
         OLDPRICE = float(msg['p'])
@@ -29,8 +29,6 @@ def process_usersocket_message(msg):
         print("{} An order {}:{} {} {}@{}".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),msg['X'],OLDSIDE,SYMBOL,OLDQUANTITY,OLDPRICE))
         if not msg['X'] == "FILLED":
             return
-        else:
-            time.sleep(1)
 
         if not SYMBOL in symbolsInfo:
             print("{} is not included, refresh".format(SYMBOL))
