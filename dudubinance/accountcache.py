@@ -30,7 +30,7 @@ class AccountCache(object):
         self._callbacks = {}
         for s in symbols:
             self._orders[s]=self._client.get_open_orders(symbol=s)
-            self._callbacks[s]={}
+            self._callbacks[s]=[]
 
         #start the 
         self._bm = BinanceSocketManager(self._client)
@@ -51,6 +51,8 @@ class AccountCache(object):
         if symbol not in self._callbacks:
             raise ValueError('contains no '+symbol)
         self._callbacks[symbol].append(callback)
+    def getBalance(self,symbol):
+        return self._balances[symbol]
     def usersocketCallback(self,msg):
         # callback for account websocket
         if(msg['e'] == "outboundAccountInfo"):
@@ -93,5 +95,5 @@ class AccountCache(object):
                 print("length of orders:{}".format(len(self._orders[neworder['symbol']])))
                 
                 for eachcb in self._callbacks[neworder['symbol']]:
-                    eachcb(msg)
+                    eachcb(neworder)
            
