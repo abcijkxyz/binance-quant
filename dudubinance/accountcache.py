@@ -78,7 +78,7 @@ class AccountCache(object):
                 
                 if(msg['X'] == "NEW"):
                     self._orders[neworder['symbol']].append(neworder)
-                if(msg['X'] == "FILLED"):
+                if(msg['X'] == "FILLED" or msg['X'] == "CANCELED"):
                     for order in self._orders[neworder['symbol']]:
                         if(order['orderId'] == neworder['orderId']):
                             self._orders[neworder['symbol']].remove(order)
