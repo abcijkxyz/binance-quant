@@ -25,10 +25,12 @@ class AccountCache(object):
             self._balances[balance['asset']]['locked'] = balance['locked']
             if(float(balance['locked']) > 0):
                 print("LOCK {}: {}".format(balance['asset'],balance['locked']))
-        #initialize orders
+        #initialize symbols
         self._orders = {}
+        self._callbacks = {}
         for s in symbols:
             self._orders[s]=self._client.get_open_orders(symbol=s)
+            self._callbacks[s]={}
 
         #start the 
         self._bm = BinanceSocketManager(self._client)
@@ -42,8 +44,13 @@ class AccountCache(object):
 
     def addSymbol(self,symbol):
         self._orders[symbol]=self._client.get_open_orders(symbol)
+        self._callbacks[symbol]=[]
         # the cache should care about trades of the new symbol
 
+    def registerOrderCallback(self, symbol, callback):
+        if symbol not in self._callbacks:
+            raise ValueError('contains no '+symbol)
+        self._callbacks[symbol].append(callback)
     def usersocketCallback(self,msg):
         # callback for account websocket
         if(msg['e'] == "outboundAccountInfo"):
@@ -84,4 +91,7 @@ class AccountCache(object):
                             self._orders[neworder['symbol']].remove(order)
                             break
                 print("length of orders:{}".format(len(self._orders[neworder['symbol']])))
+                
+                for eachcb in self._callbacks[neworder['symbol']]:
+                    eachcb(msg)
            
