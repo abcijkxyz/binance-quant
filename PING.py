@@ -1,4 +1,4 @@
-
+#!/usr/bin/python
 from __future__ import print_function
 import json
 import threading
@@ -8,9 +8,9 @@ from binance.client import Client
 from binance.depthcache import DepthCacheManager
 from binance.enums import *
 
-import config 
+import apikey
 # Client Initialization
-client = Client(config.account['key'], config.account['secret'])
+client = Client(apikey.account['key'], apikey.account['secret'])
 
 
 for i in range(1, 10):
