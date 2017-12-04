@@ -34,12 +34,16 @@ class AccountCache(object):
         self._bm = BinanceSocketManager(self._client)
         self._bm.start_user_socket(self.usersocketCallback)
         self._connkey = self._bm.start()
+
     def clear(self):
+        #release thread
         self._bm.stop_socket(self._connkey)
         self._bm.close()
+
     def addSymbol(self,symbol):
         self._orders[symbol]=self._client.get_open_orders(symbol)
         # the cache should care about trades of the new symbol
+
     def usersocketCallback(self,msg):
         # callback for account websocket
         if(msg['e'] == "outboundAccountInfo"):
@@ -54,5 +58,30 @@ class AccountCache(object):
                     print("LOCK {}: {}".format(b['a'],b['l']))
         if(msg['e'] == 'executionReport'):
             if(msg['s'] in self._orders):
-                print(msg)
+
+                neworder = {
+                "symbol": msg['s'],
+                "orderId": msg['i'],
+                "clientOrderId": msg['c'],
+                "price": msg['p'],
+                "origQty": msg['q'],
+                "executedQty": msg['l'],
+                "status": msg['X'],
+                "timeInForce": msg['f'],
+                "type": msg['o'],
+                "side": msg['S'],
+                "stopPrice": "0.0",
+                "icebergQty": "0.0",
+                "time": msg['E']
+                }
+                print("{}: {} {} {}@{}".format(neworder['status'],neworder['side'],neworder['symbol'],neworder['origQty'],neworder['price']))
+                
+                if(msg['X'] == "NEW"):
+                    self._orders[neworder['symbol']].append(neworder)
+                if(msg['X'] == "FILLED"):
+                    for order in self._orders[neworder['symbol']]:
+                        if(order['orderId'] == neworder['orderId']):
+                            self._orders[neworder['symbol']].remove(order)
+                            break
+                print("length of orders:{}".format(len(self._orders[neworder['symbol']])))
            
