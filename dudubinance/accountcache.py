@@ -1,4 +1,5 @@
 from binance.websockets import BinanceSocketManager
+import time
 class AccountCache(object):
     def __init__(self, client, *symbols):
         '''
@@ -29,23 +30,36 @@ class AccountCache(object):
         self._orders = {}
         self._callbacks = {}
         for s in symbols:
-            self._orders[s]=self._client.get_open_orders(symbol=s)
             self._callbacks[s]=[]
+            orders=self._client.get_open_orders(symbol=s)
 
-        #start the 
+            self._orders[s]={'BUY':[],'SELL':[]}
+            for order in orders:
+                self._orders[s][order['side']].append(order)
+            self._sort_orders(s)
+        #start the socketmanager
         self._bm = BinanceSocketManager(self._client)
         self._bm.start_user_socket(self.usersocketCallback)
         self._connkey = self._bm.start()
 
+    def _sort_orders(self,s):
+        self._orders[s]['BUY'].sort(key=lambda order:order['price'],reverse=True) 
+        self._orders[s]['SELL'].sort(key=lambda order:order['price']) 
     def clear(self):
         #release thread
         self._bm.stop_socket(self._connkey)
         self._bm.close()
 
-    def addSymbol(self,symbol):
-        self._orders[symbol]=self._client.get_open_orders(symbol)
-        self._callbacks[symbol]=[]
-        # the cache should care about trades of the new symbol
+    def getOrders(self,symbol):
+        return self._orders[symbol]
+    def addSymbol(self,s):
+        #s:symbol
+        self._callbacks[s]=[]
+        orders=self._client.get_open_orders(symbol=s)
+        self._orders[s]={'BUY':[],'SELL':[]}
+        for order in orders:
+            self._orders[s][order['side']].append(order)
+        self._sort_orders(s)
 
     def registerOrderCallback(self, symbol, callback):
         if symbol not in self._callbacks:
@@ -53,6 +67,7 @@ class AccountCache(object):
         self._callbacks[symbol].append(callback)
     def getBalance(self,symbol):
         return self._balances[symbol]
+    
     def usersocketCallback(self,msg):
         # callback for account websocket
         if(msg['e'] == "outboundAccountInfo"):
@@ -61,10 +76,10 @@ class AccountCache(object):
             for b in msg['B']:
                 if b['f'] != self._balances[b['a']]['free']:
                     self._balances[b['a']]['free'] = b['f']
-                    print("FREE {}: {}".format(b['a'],b['f']))
+                    #print("FREE {}: {}".format(b['a'],b['f']))
                 if b['l'] != self._balances[b['a']]['locked']:
                     self._balances[b['a']]['locked'] = b['l']
-                    print("LOCK {}: {}".format(b['a'],b['l']))
+                    #print("LOCK {}: {}".format(b['a'],b['l']))
         if(msg['e'] == 'executionReport'):
             if(msg['s'] in self._orders):
 
@@ -83,17 +98,17 @@ class AccountCache(object):
                 "icebergQty": "0.0",
                 "time": msg['E']
                 }
-                print("{}: {} {} {}@{}".format(neworder['status'],neworder['side'],neworder['symbol'],neworder['origQty'],neworder['price']))
+                if(neworder['status']!="PARTIALLY_FILLED"):
+                    print("{}:{} {} {} {}@{}".format(time.asctime( time.localtime(time.time()) ),neworder['status'],neworder['side'],neworder['symbol'],neworder['origQty'],neworder['price']))
                 
                 if(msg['X'] == "NEW"):
-                    self._orders[neworder['symbol']].append(neworder)
+                    self._orders[neworder['symbol']][neworder['side']].append(neworder)
+                    self._sort_orders(neworder['symbol'])
                 if(msg['X'] == "FILLED" or msg['X'] == "CANCELED"):
-                    for order in self._orders[neworder['symbol']]:
+                    for order in self._orders[neworder['symbol']][neworder['side']]:
                         if(order['orderId'] == neworder['orderId']):
-                            self._orders[neworder['symbol']].remove(order)
+                            self._orders[neworder['symbol']][neworder['side']].remove(order)
                             break
-                print("length of orders:{}".format(len(self._orders[neworder['symbol']])))
-                
                 for eachcb in self._callbacks[neworder['symbol']]:
                     eachcb(neworder)
            
