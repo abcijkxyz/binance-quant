@@ -25,9 +25,9 @@ ac = AccountCache(client, thesymbol)
 
 
 def safePlaceLimitOrder(NEWSIDE, SYMBOL, NEWQUANTITY,NEWPRICE):
-    print("{}:Placing an order: {} {} {}@{}".format(time.asctime( time.localtime(time.time()) ),NEWSIDE, SYMBOL, NEWQUANTITY,NEWPRICE))
     try:
         REALPRICE = format(round(NEWPRICE/symbolsInfo[SYMBOL]['tickSize']) * symbolsInfo[SYMBOL]['tickSize'],".8f")
+        print("{}:Placing an order: {} {} {}@{}".format(time.asctime( time.localtime(time.time()) ),NEWSIDE, SYMBOL, NEWQUANTITY,REALPRICE))
         order = client.order_limit(
             symbol=SYMBOL,
             quantity=NEWQUANTITY,
@@ -37,6 +37,8 @@ def safePlaceLimitOrder(NEWSIDE, SYMBOL, NEWQUANTITY,NEWPRICE):
             )
         time.sleep(0.11)
     except ValueError:
+        pass
+    except NameError:
         pass
     #print(json.dumps(order, indent=4, sort_keys=True))
 
@@ -60,6 +62,14 @@ def process_order_msg(msg):
             NEWPRICE = OLDPRICE*(1-stepratio)
 
         safePlaceLimitOrder(NEWSIDE, msg['symbol'], msg['origQty'],NEWPRICE)
+
+        orders = ac.getOrders(msg['symbol'])
+        if len(orders[msg['side']]) == 0:
+            if msg['side'] == "BUY":
+                safePlaceLimitOrder("BUY", msg['symbol'], msg['origQty'],NEWPRICE*(1-stepratio))
+            if msg['side'] == "SELL":
+                safePlaceLimitOrder("SELL", msg['symbol'], msg['origQty'],NEWPRICE/(1-stepratio))
+
 
 
 ac.registerOrderCallback(thesymbol,process_order_msg)
