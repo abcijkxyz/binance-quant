@@ -35,7 +35,7 @@ def safePlaceLimitOrder(NEWSIDE, SYMBOL, NEWQUANTITY,NEWPRICE):
             price=REALPRICE
             #newOrderRespType='FULL'
             )
-        print("Placed")
+        time.sleep(0.11)
     except ValueError:
         pass
     #print(json.dumps(order, indent=4, sort_keys=True))
@@ -71,18 +71,21 @@ orders = ac.getOrders(thesymbol)
 
 askprice = float(depth['asks'][0][0])
 myaskprice = askprice * 2
+basebalance = float(ac.getBalance(baseasset)['free'])
+print("my free {}: {}".format(baseasset,basebalance))
 if len(orders['SELL']) > 0:
     myaskprice = float(orders['SELL'][0]['price'])
+    print("my lowest ask price: {}".format(myaskprice))
 i = 0
 while True:
     if myaskprice/askprice <= (1+stepratio):
-        print
+        print myaskprice, askprice, stepratio
         break;
-    if ac.getBalance(baseasset) < tradeamount :
+    if basebalance < tradeamount :
         break;
     safePlaceLimitOrder('SELL',thesymbol,tradeamount, askprice)
-    time.sleep(0.2)
 
+    basebalance -= tradeamount
     i+=1
     askprice*=(1+stepratio)
 
@@ -91,18 +94,22 @@ while True:
 
 bidprice = float(depth['bids'][0][0])
 mybidprice = bidprice/2
+quotebalance =  float(ac.getBalance(quoteasset)['free'])
+print("my free {}: {}".format(quoteasset,quotebalance))
 if len(orders['BUY']) > 0:
     mybidprice = float(orders['BUY'][0]['price'])
+    print("my highest bidprice is {}".format(mybidprice))
 
 i = 0
 while True:
     if bidprice/mybidprice <= (1+stepratio):
+        print mybidprice, bidprice, stepratio
         break;
-    if ac.getBalance(quoteasset) < tradeamount*bidprice :
+    if quotebalance < tradeamount*bidprice :
         break;
     safePlaceLimitOrder('BUY',thesymbol,tradeamount, bidprice)
-    time.sleep(0.2)
 
+    quotebalance -= tradeamount*bidprice
     i+=1
     bidprice/=(1+stepratio)
 

@@ -49,9 +49,17 @@ class AccountCache(object):
         #release thread
         self._bm.stop_socket(self._connkey)
         self._bm.close()
-
     def getOrders(self,symbol):
         return self._orders[symbol]
+    def list_orders(self,thesymbol):
+        if not self._ifHasSymbol(thesymbol):
+            self.addSymbol(thesymbol)
+        for order in self._orders[thesymbol]['BUY']:
+            print("BUYING {}@{}".format(order['origQty'],order['price']))
+        for order in self._orders[thesymbol]['SELL']:
+            print("SELLING {}@{}".format(order['origQty'],order['price']))
+    def _ifHasSymbol(self,s):
+        return s in self._orders
     def addSymbol(self,s):
         #s:symbol
         self._callbacks[s]=[]
