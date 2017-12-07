@@ -5,7 +5,11 @@ class Executor(object):
     def __init__(self, client):
         refresh_symbolsinfo()
         self._client = client
-
+    def cancelOrders(self,*orders):
+        for order in orders:
+            print("{}:Canceling an order: {}{} {}@{}".format(time.asctime( time.localtime(time.time()) ),order['side'], order['symbol'], order['origQty'],order['price']))
+            self._client.cancel_order(symbol=order['symbol'],orderId=order['orderId'])
+        
     def safePlaceLimitOrder(self,NEWSIDE, SYMBOL, NEWQUANTITY,NEWPRICE):
         REALPRICE = format(round(NEWPRICE/symbolsInfo[SYMBOL]['tickSize']) * symbolsInfo[SYMBOL]['tickSize'],".8f")
         print("{}:Placing an order: {} {} {}@{}".format(time.asctime( time.localtime(time.time()) ),NEWSIDE, SYMBOL, NEWQUANTITY,REALPRICE))
@@ -46,6 +50,6 @@ class Executor(object):
                 nextprice/=(1+thestepratio)
             i+=1
 
-            if i > maxorderamount:
+            if i >= maxorderamount:
                 break;
 

@@ -14,7 +14,7 @@ STEPRATIO = 0.002
 TRADEQUANTITY = 100
 ORDERAMOUNT = 20
 BASEASSET = 'BNB'
-QUOTEASSET = 'BTC'
+QUOTEASSET = 'ETH'
 THESYMBOL = BASEASSET+QUOTEASSET
 
 client = Client(apikey.account['key'], apikey.account['secret'])
