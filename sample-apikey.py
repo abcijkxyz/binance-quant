@@ -1,4 +1,0 @@
-account = dict(
-    key = '',
-    secret = '',
-    )
