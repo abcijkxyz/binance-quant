@@ -104,3 +104,4 @@ ENV/
 # duduzhu personal
 test.py
 config.py
+ACCOUNTS.py

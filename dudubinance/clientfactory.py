@@ -7,7 +7,7 @@ def clientFactory(accounts):
     for account in accounts:
         print("[{}]".format(account))
     name = "somethingdefinitelynotexist"
-    while not key in accounts:
+    while not name in accounts:
         print(">",end="")
-        key = raw_input()
-    return Client(accounts[key]['key'], accounts[key]['secret'])
+        name = raw_input()
+    return Client(accounts[name]['key'], accounts[name]['secret'])

@@ -2,7 +2,7 @@
 '''
 This strategy works by place an profitable order against a just filled one
 '''
-import apikey
+from ACCOUNTS import accounts
 from dudubinance.accountcache import AccountCache
 from dudubinance.executor import Executor
 from binance.client import Client
@@ -45,15 +45,6 @@ def process_order_msg(msg):
 
         executor.safePlaceLimitOrder(NEWSIDE, msg['symbol'], msg['origQty'],NEWPRICE)
         orders = ac.getOrders(msg['symbol'])
-        if len(orders[msg['side']]) == 0:
-            depth = client.get_order_book(symbol=msg['symbol'])
-            if msg['side'] == "SELL":
-                basebalance = float(ac.getBalance(BASEASSET)['free'])
-                executor.placeOrderUntil("SELL",float(depth['asks'][0][0]),float(depth['asks'][0][0]) * 2,STEPRATIO,msg['symbol'],TRADEQUANTITY,basebalance,ORDERAMOUNT)
-            if msg['side'] == "BUY":
-                quotebalance = float(ac.getBalance(QUOTEASSET)['free'])
-                executor.placeOrderUntil("BUY",float(depth['bids'][0][0]),float(depth['bids'][0][0]) / 2,STEPRATIO,msg['symbol'],TRADEQUANTITY,quotebalance,ORDERAMOUNT)
-
 
 ac.registerOrderCallback(THESYMBOL,process_order_msg)
 #fill 
@@ -72,7 +63,8 @@ print("my free {}: {}".format(BASEASSET,basebalance))
 
 executor.placeOrderUntil("SELL",askprice,myaskprice,STEPRATIO,THESYMBOL,TRADEQUANTITY,basebalance,ORDERAMOUNT)
 
-bidprice = float(depth['bids'][0][0])
+#bidprice = float(depth['bids'][0][0])
+bidprice = float(depth['asks'][0][0])
 mybidprice = bidprice/2
 if len(orders['BUY']) > 0:
     mybidprice = float(orders['BUY'][0]['price'])
