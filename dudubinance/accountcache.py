@@ -82,6 +82,9 @@ class AccountCache(object):
             if (not msg['T']):
                 raise ValueError('Not tradable')
             for b in msg['B']:
+                if not b['a'] in self._balances:
+                    self._balances[b['a']]={'free':0,'locked':0}
+                    print('#########listing {}#####'.format(b['a']))
                 if b['f'] != self._balances[b['a']]['free']:
                     self._balances[b['a']]['free'] = b['f']
                     #print("FREE {}: {}".format(b['a'],b['f']))
