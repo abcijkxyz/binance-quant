@@ -39,8 +39,8 @@ class AccountCache(object):
             self._sort_orders(s)
         #start the socketmanager
         self._bm = BinanceSocketManager(self._client)
-        self._bm.start_user_socket(self.usersocketCallback)
-        self._connkey = self._bm.start()
+        self._connkey = self._bm.start_user_socket(self.usersocketCallback)
+        self._bm.start()
 
     def _sort_orders(self,s):
         self._orders[s]['BUY'].sort(key=lambda order:order['price'],reverse=True) 

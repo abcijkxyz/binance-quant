@@ -7,15 +7,16 @@ from ACCOUNTS import accounts
 from dudubinance.clientfactory import clientFactory
 from dudubinance.accountcache import AccountCache
 from dudubinance.executor import Executor
+from twisted.internet import reactor
 
 import json
 import threading
 import time
 
 STEPRATIO = 0.002
-TRADEQUANTITY = 500
-ORDERAMOUNT = 30
-BASEASSET = 'GTO'
+TRADEQUANTITY = 20
+ORDERAMOUNT = 100
+BASEASSET = 'BNB'
 QUOTEASSET = 'BTC'
 THESYMBOL = BASEASSET+QUOTEASSET
 
@@ -49,30 +50,47 @@ def process_order_msg(msg):
         executor.safePlaceLimitOrder(NEWSIDE, msg['symbol'], msg['origQty'],NEWPRICE)
         orders = ac.getOrders(msg['symbol'])
 
+
+def fill():
+    #fill 
+    depth = client.get_order_book(symbol=THESYMBOL)
+    orders = ac.getOrders(THESYMBOL)
+    averageprice = (float(depth['asks'][0][0]) + float(depth['bids'][0][0]))/2
+
+    askprice = averageprice * (1 + STEPRATIO)
+    myaskprice = askprice * 2
+
+    if len(orders['SELL']) > 0:
+        myaskprice = float(orders['SELL'][0]['price'])
+        print("my lowest ask price: {}".format(myaskprice))
+    basebalance = float(ac.getBalance(BASEASSET)['free'])
+    print("my free {}: {}".format(BASEASSET,basebalance))
+    executor.placeOrderUntil("SELL",askprice,myaskprice,STEPRATIO,THESYMBOL,TRADEQUANTITY,basebalance,ORDERAMOUNT)
+
+    bidprice =  averageprice / (1 + STEPRATIO)
+    mybidprice = bidprice/2
+    if len(orders['BUY']) > 0:
+        mybidprice = float(orders['BUY'][0]['price'])
+        print("my highest bidprice is {}".format(mybidprice))
+    quotebalance =  float(ac.getBalance(QUOTEASSET)['free'])
+    print("my free {}: {}".format(QUOTEASSET,quotebalance))
+    executor.placeOrderUntil("BUY",bidprice,mybidprice,STEPRATIO,THESYMBOL,TRADEQUANTITY,quotebalance,ORDERAMOUNT)
+    #end of fill
+
+
 ac.registerOrderCallback(THESYMBOL,process_order_msg)
-#fill 
-depth = client.get_order_book(symbol=THESYMBOL)
-orders = ac.getOrders(THESYMBOL)
+print("help/fill/exit")
 
-
-
-averageprice = (float(depth['asks'][0][0]) + float(depth['bids'][0][0]))/2
-askprice = averageprice * (1 + STEPRATIO)
-myaskprice = askprice * 2
-
-if len(orders['SELL']) > 0:
-    myaskprice = float(orders['SELL'][0]['price'])
-    print("my lowest ask price: {}".format(myaskprice))
-basebalance = float(ac.getBalance(BASEASSET)['free'])
-print("my free {}: {}".format(BASEASSET,basebalance))
-executor.placeOrderUntil("SELL",askprice,myaskprice,STEPRATIO,THESYMBOL,TRADEQUANTITY,basebalance,ORDERAMOUNT)
-
-#bidprice = float(depth['bids'][0][0])
-bidprice =  averageprice / (1 + STEPRATIO)
-mybidprice = bidprice/2
-if len(orders['BUY']) > 0:
-    mybidprice = float(orders['BUY'][0]['price'])
-    print("my highest bidprice is {}".format(mybidprice))
-quotebalance =  float(ac.getBalance(QUOTEASSET)['free'])
-print("my free {}: {}".format(QUOTEASSET,quotebalance))
-executor.placeOrderUntil("BUY",bidprice,mybidprice,STEPRATIO,THESYMBOL,TRADEQUANTITY,quotebalance,ORDERAMOUNT)
+while True:
+    try:
+        something = raw_input()
+        if(something == "exit"):
+            raise NameError("random")
+        if(something == "help"):
+            print("help/fill/exit")
+        if(something == "fill"):
+            fill();
+    except:
+        ac.clear()
+        reactor.stop()
+        break
