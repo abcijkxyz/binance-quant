@@ -1,5 +1,6 @@
 from binance.websockets import BinanceSocketManager
 import time
+import os
 class AccountCache(object):
     def __init__(self, client, *symbols):
         '''
@@ -84,7 +85,8 @@ class AccountCache(object):
             for b in msg['B']:
                 if not b['a'] in self._balances:
                     self._balances[b['a']]={'free':0,'locked':0}
-                    print('#########listing {}#####'.format(b['a']))
+                    #print('#########listing {}#####'.format(b['a']))
+                    os.system("bash alertlisting.sh "+b['a'])
                 if b['f'] != self._balances[b['a']]['free']:
                     self._balances[b['a']]['free'] = b['f']
                     #print("FREE {}: {}".format(b['a'],b['f']))
