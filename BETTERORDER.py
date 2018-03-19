@@ -23,14 +23,18 @@ class MarketMaker(object):
         self._TRADEQUANTITY = tradeqty
         self._THESYMBOL = self._BASEASSET+self._QUOTEASSET
 
-#在这里初始化所有想要交易的交易对
-marketmakers = {'GTOBNB':MarketMaker('GTO','BNB',500),'QTUMBNB':MarketMaker('QTUM','BNB',1)}
+#list
+marketmakers = {
+'GTOBNB':MarketMaker('GTO','BNB',500),
+'QTUMBNB':MarketMaker('QTUM','BNB',15)
+}
 
 # Client Initialization
 client = clientFactory(accounts)
 
-ac = AccountCache(client, [])
+ac = AccountCache(client)
 for symbol in marketmakers:
+    print('addSymbol:'+symbol)
     ac.addSymbol(symbol)
 
 executor = Executor(client)
@@ -60,8 +64,11 @@ def process_order_msg(msg):
         executor.safePlaceLimitOrder(NEWSIDE, msg['symbol'], msg['origQty'],NEWPRICE)
         orders = ac.getOrders(msg['symbol'])
         #Auto place new
-        if(len(orders['BUY']) == 0 || len(orders['SELL']) == 0):
-            fill(marketmakers[msg['symbol']])
+        if(len(orders['BUY']) == 0):
+            executor.safePlaceLimitOrder('BUY', msg['symbol'], msg['origQty'],float(orders['SELL'][0]['price'])/(1+STEPRATIO)/(1+STEPRATIO))
+        elif(len(orders['SELL']) == 0):
+            executor.safePlaceLimitOrder('SELL', msg['symbol'], msg['origQty'],float(orders['BUY'][0]['price'])*(1+STEPRATIO)*(1+STEPRATIO))
+            
 
 
 def fill(marketmaker):
@@ -91,7 +98,6 @@ def fill(marketmaker):
     #end of fill
 
 
-ac = AccountCache(client, [])
 for symbol in marketmakers:
     ac.registerOrderCallback(symbol,process_order_msg)
 
@@ -106,8 +112,8 @@ while True:
             print("help/fill/exit")
         if(something == "fill"):
 
-        for symbol in marketmakers:
-            fill(marketmakers[symbol])
+            for symbol in marketmakers:
+                fill(marketmakers[symbol])
     except:
         ac.clear()
         reactor.stop()
