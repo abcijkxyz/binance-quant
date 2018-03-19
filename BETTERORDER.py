@@ -26,7 +26,7 @@ class MarketMaker(object):
 #list
 marketmakers = {
 'GTOBNB':MarketMaker('GTO','BNB',500),
-'QTUMBNB':MarketMaker('QTUM','BNB',15)
+'QTUMBNB':MarketMaker('QTUM','BNB',10)
 }
 
 # Client Initialization
@@ -62,12 +62,15 @@ def process_order_msg(msg):
             NEWPRICE = OLDPRICE/(1+STEPRATIO)
 
         executor.safePlaceLimitOrder(NEWSIDE, msg['symbol'], msg['origQty'],NEWPRICE)
+
+        time.sleep(2)
         orders = ac.getOrders(msg['symbol'])
-        #Auto place new
+        #Auto fill
         if(len(orders['BUY']) == 0):
             executor.safePlaceLimitOrder('BUY', msg['symbol'], msg['origQty'],float(orders['SELL'][0]['price'])/(1+STEPRATIO)/(1+STEPRATIO))
         elif(len(orders['SELL']) == 0):
             executor.safePlaceLimitOrder('SELL', msg['symbol'], msg['origQty'],float(orders['BUY'][0]['price'])*(1+STEPRATIO)*(1+STEPRATIO))
+        #Auto fill
             
 
 
@@ -85,7 +88,7 @@ def fill(marketmaker):
         print("my lowest ask price: {}".format(myaskprice))
     basebalance = float(ac.getBalance(marketmaker._BASEASSET)['free'])
     print("my free {}: {}".format(marketmaker._BASEASSET,basebalance))
-    executor.placeOrderUntil("SELL",askprice,myaskprice,STEPRATIO,marketmaker._THESYMBOL,marketmaker._TRADEQUANTITY,basebalance,3)
+    executor.placeOrderUntil("SELL",askprice,myaskprice,STEPRATIO,marketmaker._THESYMBOL,marketmaker._TRADEQUANTITY,basebalance,20)
 
     bidprice =  averageprice / (1 + STEPRATIO)
     mybidprice = bidprice/2
@@ -94,7 +97,7 @@ def fill(marketmaker):
         print("my highest bidprice is {}".format(mybidprice))
     quotebalance =  float(ac.getBalance(marketmaker._QUOTEASSET)['free'])
     print("my free {}: {}".format(marketmaker._QUOTEASSET,quotebalance))
-    executor.placeOrderUntil("BUY",bidprice,mybidprice,STEPRATIO,marketmaker._THESYMBOL,marketmaker._TRADEQUANTITY,quotebalance,3)
+    executor.placeOrderUntil("BUY",bidprice,mybidprice,STEPRATIO,marketmaker._THESYMBOL,marketmaker._TRADEQUANTITY,quotebalance,20)
     #end of fill
 
 
