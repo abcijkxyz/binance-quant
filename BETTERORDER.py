@@ -14,10 +14,10 @@ import threading
 import time
 
 STEPRATIO = 0.002
-TRADEQUANTITY = 20
-ORDERAMOUNT = 100
-BASEASSET = 'BNB'
-QUOTEASSET = 'BTC'
+TRADEQUANTITY = 500
+ORDERAMOUNT = 50
+BASEASSET = 'GTO'
+QUOTEASSET = 'BNB'
 THESYMBOL = BASEASSET+QUOTEASSET
 
 # Client Initialization
@@ -32,7 +32,7 @@ def process_order_msg(msg):
     # if a limite order is filled
     #print(json.dumps(msg, indent=4, sort_keys=True))
 
-    if msg['symbol'] == THESYMBOL and msg['type'] == "LIMIT" and msg['status'] == "FILLED":
+    if msg['symbol'] == THESYMBOL and msg['type'] == "LIMIT" and msg['status'] == "FILLED" and int(float(msg['origQty'])) == TRADEQUANTITY:
         OLDPRICE = float(msg['price'])
         '''
         if not SYMBOL in symbolsInfo:
