@@ -26,6 +26,10 @@ class MarketMaker(object):
 #list
 marketmakers = {
 'GTOBNB':MarketMaker('GTO','BNB',500),
+'BNBBTC':MarketMaker('BNB','BTC',15),
+'BNBETH':MarketMaker('BNB','ETH',15),
+'NEOBNB':MarketMaker('NEO','BNB',2),
+'LTCBNB':MarketMaker('LTC','BNB',1),
 'QTUMBNB':MarketMaker('QTUM','BNB',10)
 }
 
@@ -63,13 +67,19 @@ def process_order_msg(msg):
 
         executor.safePlaceLimitOrder(NEWSIDE, msg['symbol'], msg['origQty'],NEWPRICE)
 
-        time.sleep(2)
         orders = ac.getOrders(msg['symbol'])
         #Auto fill
-        if(len(orders['BUY']) == 0):
-            executor.safePlaceLimitOrder('BUY', msg['symbol'], msg['origQty'],float(orders['SELL'][0]['price'])/(1+STEPRATIO)/(1+STEPRATIO))
-        elif(len(orders['SELL']) == 0):
-            executor.safePlaceLimitOrder('SELL', msg['symbol'], msg['origQty'],float(orders['BUY'][0]['price'])*(1+STEPRATIO)*(1+STEPRATIO))
+        if(msg['side'] == 'BUY' and len(orders['BUY']) == 0):
+            if(marketmakers[msg['symbol']]._BASEASSET == 'BNB'):
+                executor.safePlaceLimitOrder('SELL', msg['symbol'], msg['origQty'],OLDPRICE)
+            else:
+                executor.safePlaceLimitOrder('BUY', msg['symbol'], msg['origQty'],OLDPRICE/(1+STEPRATIO))
+        elif(msg['side'] == 'SELL' and len(orders['SELL']) == 0):
+            if(marketmakers[msg['symbol']]._QUOTEASSET == 'BNB'):
+                executor.safePlaceLimitOrder('BUY', msg['symbol'], msg['origQty'],OLDPRICE)
+            else:
+                executor.safePlaceLimitOrder('SELL', msg['symbol'], msg['origQty'],OLDPRICE*(1+STEPRATIO))
+
         #Auto fill
             
 
@@ -80,43 +90,51 @@ def fill(marketmaker):
     orders = ac.getOrders(marketmaker._THESYMBOL)
     averageprice = (float(depth['asks'][0][0]) + float(depth['bids'][0][0]))/2
 
-    askprice = averageprice * (1 + STEPRATIO)
-    myaskprice = askprice * 2
 
+
+    askprice = averageprice * (1 + STEPRATIO)
+    stopaskprice = askprice * 1.1
     if len(orders['SELL']) > 0:
-        myaskprice = float(orders['SELL'][0]['price'])
-        print("my lowest ask price: {}".format(myaskprice))
+        stopaskprice = float(orders['SELL'][0]['price'])
+        print("my lowest ask price: {}".format(stopaskprice))
     basebalance = float(ac.getBalance(marketmaker._BASEASSET)['free'])
     print("my free {}: {}".format(marketmaker._BASEASSET,basebalance))
-    executor.placeOrderUntil("SELL",askprice,myaskprice,STEPRATIO,marketmaker._THESYMBOL,marketmaker._TRADEQUANTITY,basebalance,20)
+    executor.placeOrderUntil("SELL",askprice,stopaskprice,STEPRATIO,marketmaker._THESYMBOL,marketmaker._TRADEQUANTITY,basebalance)
 
     bidprice =  averageprice / (1 + STEPRATIO)
-    mybidprice = bidprice/2
+    stopbidprice = bidprice * 0.9
     if len(orders['BUY']) > 0:
-        mybidprice = float(orders['BUY'][0]['price'])
-        print("my highest bidprice is {}".format(mybidprice))
+        stopbidprice = float(orders['BUY'][0]['price'])
+        print("my highest bidprice is {}".format(stopbidprice))
     quotebalance =  float(ac.getBalance(marketmaker._QUOTEASSET)['free'])
     print("my free {}: {}".format(marketmaker._QUOTEASSET,quotebalance))
-    executor.placeOrderUntil("BUY",bidprice,mybidprice,STEPRATIO,marketmaker._THESYMBOL,marketmaker._TRADEQUANTITY,quotebalance,20)
+    executor.placeOrderUntil("BUY",bidprice,stopbidprice,STEPRATIO,marketmaker._THESYMBOL,marketmaker._TRADEQUANTITY,quotebalance)
     #end of fill
 
 
 for symbol in marketmakers:
     ac.registerOrderCallback(symbol,process_order_msg)
 
-print("help/fill/exit")
+print("help/fill/exit/status")
 
 while True:
     try:
         something = raw_input()
         if(something == "exit"):
-            raise NameError("random")
-        if(something == "help"):
+            raise NameError("exit")
+        elif(something == "help"):
             print("help/fill/exit")
-        if(something == "fill"):
-
+        elif(something == "fill"):
             for symbol in marketmakers:
                 fill(marketmakers[symbol])
+        elif(something == "status"):
+            for symbol in marketmakers:
+                print(symbol)
+                orders = ac.getOrders(symbol)
+                print(symbol+" BUY:"+len(orders['BUY'])+" SELL:"+len(orders['SELL']))
+        else:
+            eval(something)
+                
     except:
         ac.clear()
         reactor.stop()

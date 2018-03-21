@@ -25,7 +25,8 @@ class Executor(object):
             print "Unexpected error:", sys.exc_info()
         time.sleep(0.11)
 
-    def placeOrderUntil(self,side,startprice,stopprice,thestepratio,targetsymbol,amount,assetbalance,maxorderamount):
+    def placeOrderUntil(self,side,startprice,stopprice,thestepratio,targetsymbol,amount,assetbalance):
+        #,maxorderamount):
         nextprice = startprice
         i = 0
         while True:
@@ -50,6 +51,6 @@ class Executor(object):
                 nextprice/=(1+thestepratio)
             i+=1
 
-            if i >= maxorderamount:
-                break;
+            #if i >= maxorderamount:
+            #    break;
 
