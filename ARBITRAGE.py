@@ -13,15 +13,19 @@ import time
 from binance.client import Client
 from binance.depthcache import DepthCacheManager
 from binance.enums import *
+from ACCOUNTS import accounts
+from dudubinance.clientfactory import clientFactory
 
 mylock = threading.Lock()
+client = clientFactory(accounts)
 
-import config 
-# Client Initialization
-client = Client(config.account['key'], config.account['secret'])
+
+DCs={}
+DCs['BNBETH'] = DCMs['BNBETH'].get_depth_cache();
+DCs['BNBBTC'] = DCMs['BNBBTC'].get_depth_cache();
+DCs['ETHBTC'] = DCMs['ETHBTC'].get_depth_cache();
 
 isTrading = False
-
 def process_any_depth(depth_cache):
 
     global isTrading
@@ -49,15 +53,15 @@ def process_any_depth(depth_cache):
 
     
     #BNB->ETH->BTC->BNB
-    BEBRatio = float(BNBETH_bestbid[0]) * float(ETHBTC_bestbid[0]) /float(BNBBTC_bestask[0]) - 1 - config.threshold['commission']
+    BEBRatio = float(BNBETH_bestbid[0]) * float(ETHBTC_bestbid[0]) /float(BNBBTC_bestask[0]) - 1 - 0.0015
     BEBCapacity = int(min(float(BNBETH_bestbid[1]), float(ETHBTC_bestbid[1]) / float(BNBETH_bestbid[0]),float(BNBBTC_bestask[1])))
 
     #BNB->BTC->ETH->BNB
-    BBERatio = float(BNBBTC_bestbid[0])  /float(ETHBTC_bestask[0]) /float(BNBETH_bestask[0]) - 1 - config.threshold['commission']
+    BBERatio = float(BNBBTC_bestbid[0])  /float(ETHBTC_bestask[0]) /float(BNBETH_bestask[0]) - 1 - 0.0015
     BBECapacity = int(min(float(BNBETH_bestask[1]), float(ETHBTC_bestask[1]) / float(BNBETH_bestask[0]),float(BNBBTC_bestbid[1])))
 
     #BNB->ETH->BTC->BNB
-    if(BEBCapacity * BEBRatio>config.threshold['targetearn']):
+    if(BEBRatio>0.001):
         isTrading=True
         print("{}\tBNB->ETH->BTC->BNB Ratio:{},\tQuantity:{}".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) , BEBRatio,BEBCapacity))
         
@@ -130,7 +134,7 @@ def process_any_depth(depth_cache):
         print("{}\tBNB->ETH->BTC->BNB Ratio:{},\tNot Good Enough".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) , BEBRatio))
 
     #BNB->BTC->ETH->BNB
-    if(BBECapacity * BBERatio>config.threshold['targetearn']):
+    if(BBERatio>0.001):
         isTrading=True
         print("{}\tBNB->BTC->ETH->BNB Ratio:{},\tQuantity:{}".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) , BBERatio,BBECapacity))
         
@@ -222,10 +226,6 @@ DCMs['BNBBTC'] = DepthCacheManager(client,'BNBBTC',process_any_depth);
 DCMs['BNBETH'] = DepthCacheManager(client,'BNBETH',process_any_depth);
 DCMs['ETHBTC'] = DepthCacheManager(client,'ETHBTC',process_any_depth);
 
-DCs={}
-DCs['BNBETH'] = DCMs['BNBETH'].get_depth_cache();
-DCs['BNBBTC'] = DCMs['BNBBTC'].get_depth_cache();
-DCs['ETHBTC'] = DCMs['ETHBTC'].get_depth_cache();
 
 
 

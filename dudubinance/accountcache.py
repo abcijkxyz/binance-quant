@@ -122,6 +122,6 @@ class AccountCache(object):
                         if(order['orderId'] == neworder['orderId']):
                             self._orders[neworder['symbol']][neworder['side']].remove(order)
                             break
-            #callback anyway
-            for eachcb in self._callbacks[neworder['symbol']]:
-                eachcb(neworder)
+                #callback anyway
+                for eachcb in self._callbacks[neworder['symbol']]:
+                    eachcb(neworder)

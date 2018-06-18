@@ -8,22 +8,32 @@ class Executor(object):
     def cancelOrders(self,*orders):
         for order in orders:
             print("{}:Canceling an order: {}{} {}@{}".format(time.asctime( time.localtime(time.time()) ),order['side'], order['symbol'], order['origQty'],order['price']))
-            self._client.cancel_order(symbol=order['symbol'],orderId=order['orderId'])
+            try:
+                return self._client.cancel_order(symbol=order['symbol'],orderId=order['orderId'])
+            except Exception as inst:
+                print(type(inst))
+                print(inst.args)
+                print(inst)
+                print "Unexpected error:", sys.exc_info()
+
         
     def safePlaceLimitOrder(self,NEWSIDE, SYMBOL, NEWQUANTITY,NEWPRICE):
         REALPRICE = format(round(NEWPRICE/symbolsInfo[SYMBOL]['tickSize']) * symbolsInfo[SYMBOL]['tickSize'],".8f")
         print("{}:Placing an order: {} {} {}@{}".format(time.asctime( time.localtime(time.time()) ),NEWSIDE, SYMBOL, NEWQUANTITY,REALPRICE))
         try:
-            order = self._client.order_limit(
+            time.sleep(0.2)
+            return self._client.order_limit(
             symbol=SYMBOL,
             quantity=NEWQUANTITY,
             side=NEWSIDE,
             price=REALPRICE
             #newOrderRespType='FULL'
             )
-        except:
+        except Exception as inst:
+            print(type(inst))
+            print(inst.args)
+            print(inst)
             print "Unexpected error:", sys.exc_info()
-        time.sleep(0.11)
 
     def placeOrderUntil(self,side,startprice,stopprice,thestepratio,targetsymbol,amount,assetbalance):
         #,maxorderamount):

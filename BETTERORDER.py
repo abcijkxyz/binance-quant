@@ -13,7 +13,7 @@ import json
 import threading
 import time
 
-STEPRATIO = 0.002
+STEPRATIO = 0.001
 
 
 class MarketMaker(object):
@@ -25,12 +25,10 @@ class MarketMaker(object):
 
 #list
 marketmakers = {
-'GTOBNB':MarketMaker('GTO','BNB',500),
-'BNBBTC':MarketMaker('BNB','BTC',15),
-'BNBETH':MarketMaker('BNB','ETH',15),
-'NEOBNB':MarketMaker('NEO','BNB',2),
-'LTCBNB':MarketMaker('LTC','BNB',1),
-'QTUMBNB':MarketMaker('QTUM','BNB',10)
+#'GTOBNB':MarketMaker('GTO','BNB',150),
+#'RDNBNB':MarketMaker('RDN','BNB',30),
+#'LOOMBNB':MarketMaker('LOOM','BNB',100),
+'SKYBNB':MarketMaker('SKY','BNB',100),
 }
 
 # Client Initialization
@@ -69,6 +67,7 @@ def process_order_msg(msg):
 
         orders = ac.getOrders(msg['symbol'])
         #Auto fill
+        '''
         if(msg['side'] == 'BUY' and len(orders['BUY']) == 0):
             if(marketmakers[msg['symbol']]._BASEASSET == 'BNB'):
                 executor.safePlaceLimitOrder('SELL', msg['symbol'], msg['origQty'],OLDPRICE)
@@ -79,7 +78,7 @@ def process_order_msg(msg):
                 executor.safePlaceLimitOrder('BUY', msg['symbol'], msg['origQty'],OLDPRICE)
             else:
                 executor.safePlaceLimitOrder('SELL', msg['symbol'], msg['origQty'],OLDPRICE*(1+STEPRATIO))
-
+        '''
         #Auto fill
             
 
@@ -93,7 +92,7 @@ def fill(marketmaker):
 
 
     askprice = averageprice * (1 + STEPRATIO)
-    stopaskprice = askprice * 1.1
+    stopaskprice = askprice * 1.05
     if len(orders['SELL']) > 0:
         stopaskprice = float(orders['SELL'][0]['price'])
         print("my lowest ask price: {}".format(stopaskprice))
@@ -102,7 +101,7 @@ def fill(marketmaker):
     executor.placeOrderUntil("SELL",askprice,stopaskprice,STEPRATIO,marketmaker._THESYMBOL,marketmaker._TRADEQUANTITY,basebalance)
 
     bidprice =  averageprice / (1 + STEPRATIO)
-    stopbidprice = bidprice * 0.9
+    stopbidprice = bidprice * 0.8
     if len(orders['BUY']) > 0:
         stopbidprice = float(orders['BUY'][0]['price'])
         print("my highest bidprice is {}".format(stopbidprice))
@@ -110,12 +109,13 @@ def fill(marketmaker):
     print("my free {}: {}".format(marketmaker._QUOTEASSET,quotebalance))
     executor.placeOrderUntil("BUY",bidprice,stopbidprice,STEPRATIO,marketmaker._THESYMBOL,marketmaker._TRADEQUANTITY,quotebalance)
     #end of fill
+    time.sleep(1)
 
 
 for symbol in marketmakers:
     ac.registerOrderCallback(symbol,process_order_msg)
 
-print("help/fill/exit/status")
+print("help/fill/exit/status/fill [symbol]/cancel [symbol]")
 
 while True:
     try:
@@ -131,9 +131,16 @@ while True:
             for symbol in marketmakers:
                 print(symbol)
                 orders = ac.getOrders(symbol)
-                print(symbol+" BUY:"+len(orders['BUY'])+" SELL:"+len(orders['SELL']))
+                print(len(orders['BUY']))
+                print(len(orders['SELL']))
         else:
-            eval(something)
+            commands=something.split(" ")
+            if(commands[0]=="fill"):
+                fill(marketmakers[commands[1]])
+            elif(commands[0]=="cancel"):
+                orders = ac.getOrders(commands[1])
+                executor.cancelOrders(orders['BUY'])
+                executor.cancelOrders(orders['SELL'])
                 
     except:
         ac.clear()
